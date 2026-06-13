@@ -84,37 +84,39 @@ header {
 .controls {
   background: #f0f0f5;
   border-bottom: 1px solid #ddd;
-  padding: 8px 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
+  padding: 6px 12px;
   position: sticky;
   top: 74px;
   z-index: 99;
 }
+.ctrl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 3px 0;
+}
 .ctrl-group {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 .ctrl-label {
   font-size: 11px;
   color: #666;
-  letter-spacing: .5px;
   white-space: nowrap;
 }
 .ctrl-input, .ctrl-select {
   background: #fff;
   border: 1px solid #ccc;
   color: #333;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: 4px;
   font-size: 12px;
   outline: none;
   font-family: inherit;
 }
-.ctrl-input { width: 200px; }
+.ctrl-input { width: 160px; }
 .ctrl-input::placeholder { color: #bbb; }
 .ctrl-input:focus, .ctrl-select:focus { border-color: #3a7bd5; box-shadow: 0 0 0 2px rgba(58,123,213,.15); }
 .ctrl-select option { background: #fff; color: #333; }
@@ -210,6 +212,7 @@ td { padding: 7px 10px; vertical-align: middle; }
 .td-no   { color: #aaa; font-size: 11px; width: 36px; }
 .td-date { color: #777; font-size: 11px; white-space: nowrap; }
 .td-title{ font-weight: 600; min-width: 140px; }
+.td-date-sub { font-size: 10px; color: #999; font-weight: 400; }
 .td-vol  { color: #999; font-size: 11px; }
 .td-price{ text-align: right; font-variant-numeric: tabular-nums; }
 .td-dot  { text-align: center; width: 52px; }
@@ -342,36 +345,40 @@ td { padding: 7px 10px; vertical-align: middle; }
 </header>
 
 <div class="controls">
-  <div class="ctrl-group">
-    <span class="ctrl-label">検索</span>
-    <input class="ctrl-input" id="q" type="text" placeholder="タイトル・メーカー…" oninput="filter()">
+  <div class="ctrl-row">
+    <div class="ctrl-group">
+      <span class="ctrl-label">検索</span>
+      <input class="ctrl-input" id="q" type="text" placeholder="タイトル・メーカー…" oninput="filter()">
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">ジャンル</span>
+      <select class="ctrl-select" id="fGenre" onchange="filter()"><option value="">すべて</option></select>
+    </div>
   </div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">ジャンル</span>
-    <select class="ctrl-select" id="fGenre" onchange="filter()"><option value="">すべて</option></select>
+  <div class="ctrl-row">
+    <div class="ctrl-group">
+      <span class="ctrl-label">所持</span>
+      <select class="ctrl-select" id="fStatus" onchange="filter()">
+        <option value="">すべて</option>
+        <option value="owned">所持あり（1本以上）</option>
+        <option value="none">未所持（空白）</option>
+        <option value="1">1本</option>
+        <option value="2+">2本以上</option>
+        <option value="△">購入未定（△）</option>
+        <option value="-">購入不可（-）</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">機種</span>
+      <select class="ctrl-select" id="fMachine" onchange="filter()">
+        <option value="">すべて</option>
+        <option value="M">モノ（GB/GBP）</option>
+        <option value="C専">カラー（GBC専用）</option>
+        <option value="C対">共通（GBC対応）</option>
+      </select>
+    </div>
+    <button class="apply-btn" id="applyBtn" onclick="applyChanges()" style="display:none">✔ 適用</button>
   </div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">所持</span>
-    <select class="ctrl-select" id="fStatus" onchange="filter()">
-      <option value="">すべて</option>
-      <option value="owned">所持あり（1本以上）</option>
-      <option value="none">未所持（空白）</option>
-      <option value="1">1本</option>
-      <option value="2+">2本以上</option>
-      <option value="△">購入未定（△）</option>
-      <option value="-">購入不可（-）</option>
-    </select>
-  </div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">機種</span>
-    <select class="ctrl-select" id="fMachine" onchange="filter()">
-      <option value="">すべて</option>
-      <option value="M">モノ（GB/GBP）</option>
-      <option value="C専">カラー（GBC専用）</option>
-      <option value="C対">共通（GBC対応）</option>
-    </select>
-  </div>
-  <button class="apply-btn" id="applyBtn" onclick="applyChanges()" style="display:none">✔ 適用</button>
 </div>
 
 <div class="sub-bar" id="subBar">
@@ -399,12 +406,9 @@ td { padding: 7px 10px; vertical-align: middle; }
         <th onclick="sortBy('ti')">タイトル</th>
         <th onclick="sortBy('ge')">ジャンル</th>
         <th onclick="sortBy('mk')">メーカー</th>
-        <th onclick="sortBy('dt')">発売日</th>
         <th onclick="sortBy('pr')">価格</th>
-        <th onclick="sortBy('vo')">容量</th>
         <th onclick="sortBy('tp')">機種</th>
-        <th>NP / SGB</th>
-        <th>品番</th>
+        <th>NP/SGB</th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
@@ -616,15 +620,12 @@ function renderRows(rows) {
         <span class="st-btn ${sm.cls}" onclick="toggleStatus('${r.no}')">${sm.label}</span>
       </td>
       <td class="td-no">${r.no}</td>
-      <td class="td-title">${r.ti}</td>
+      <td class="td-title">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
       <td><span class="badge ${gc}">${ge}</span></td>
       <td>${getMaker(r)}</td>
-      <td class="td-date">${r.dt}</td>
       <td class="td-price">${prLbl}</td>
-      <td class="td-vol">${r.vo}</td>
       <td><span class="mach ${mtpCls}">${mtpLbl}</span></td>
       <td class="td-dot">${npDot}${sgDot}</td>
-      <td class="td-bn">${r.bn}</td>
     </tr>`;
   }).join('');
 }
