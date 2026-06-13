@@ -25,7 +25,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   min-height: 100vh;
 }
 
@@ -185,9 +185,9 @@ thead tr {
   z-index: 98;
 }
 thead th {
-  padding: 8px 10px;
+  padding: 5px 6px;
   text-align: left;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: .5px;
   white-space: nowrap;
@@ -197,8 +197,8 @@ thead th {
 }
 thead th:last-child { border-right: none; }
 thead th:hover { background: #3a3a4e; }
-thead th.asc::after  { content: ' ▲'; font-size: 9px; color: #3a7bd5; }
-thead th.desc::after { content: ' ▼'; font-size: 9px; color: #3a7bd5; }
+thead th.asc::after  { content: ' ▲'; font-size: 8px; color: #3a7bd5; }
+thead th.desc::after { content: ' ▼'; font-size: 8px; color: #3a7bd5; }
 
 tbody tr {
   border-bottom: 1px solid #eee;
@@ -207,12 +207,12 @@ tbody tr {
 tbody tr:nth-child(even) { background: #fafafa; }
 tbody tr:hover { background: #eef4ff; }
 
-td { padding: 7px 10px; vertical-align: middle; }
+td { padding: 5px 6px; vertical-align: middle; }
 
 .td-no   { color: #aaa; font-size: 11px; width: 36px; }
 .td-date { color: #777; font-size: 11px; white-space: nowrap; }
-.td-title{ font-weight: 600; min-width: 140px; }
-.td-date-sub { font-size: 10px; color: #999; font-weight: 400; }
+.td-title{ font-weight: 600; min-width: 120px; }
+.td-date-sub { font-size: 9px; color: #999; font-weight: 400; }
 .td-vol  { color: #999; font-size: 11px; }
 .td-price{ text-align: right; font-variant-numeric: tabular-nums; }
 .td-dot  { text-align: center; width: 52px; }
@@ -222,9 +222,9 @@ td { padding: 7px 10px; vertical-align: middle; }
 /* ── ジャンルバッジ ── */
 .badge {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: .5px;
 }
@@ -255,14 +255,14 @@ td { padding: 7px 10px; vertical-align: middle; }
 /* ── 所持ステータスボタン ── */
 .st-btn {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 2px 6px;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
   transition: filter .15s, transform .1s;
-  min-width: 64px;
+  min-width: 52px;
   text-align: center;
   border: 1px solid transparent;
 }
