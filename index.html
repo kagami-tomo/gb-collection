@@ -656,7 +656,13 @@ function updateHeaderStats() {
   document.getElementById('pct').textContent      = pct + '%';
 }
 
-function init() {
+async function init() {
+  try {
+    const data = await decompressData(B64_DATA);
+    ALL_DATA.push(...data);
+  } catch(e) {
+    console.error('Data load error:', e);
+  }
   const genres = [...new Set(ALL_DATA.map(r => r.ge).filter(Boolean))].sort();
   const sel = document.getElementById('fGenre');
   genres.forEach(g => {
