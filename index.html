@@ -7,17 +7,10 @@
 <title>GB コレクション管理</title>
 <style>
 :root {
-  --ink:    #1e1e1e;
-  --paper:  #ffffff;
+  --ink:  #1e1e1e;
+  --paper: #ffffff;
   --screen: #3a7bd5;
-  --dark:   #2c2c3a;
-  --mid:    #4a4a5e;
-  --lite:   #8888aa;
-  --pale:   #f4f4f8;
-  --red:    #c0392b;
-  --blue:   #3a7bd5;
-  --orange: #e67e22;
-  --purple: #8e44ad;
+  --dark: #2c2c3a;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -117,10 +110,12 @@ header {
   outline: none;
   font-family: inherit;
 }
-.ctrl-input { width: 160px; }
+.ctrl-input { width: 120px; }
 .ctrl-input::placeholder { color: #bbb; }
 .ctrl-input:focus, .ctrl-select:focus { border-color: #3a7bd5; box-shadow: 0 0 0 2px rgba(58,123,213,.15); }
 .ctrl-select option { background: #fff; color: #333; }
+.ctrl-select-sm { width: 70px; }
+.ctrl-select-md { width: 160px; }
 
 .apply-btn {
   background: #3a7bd5;
@@ -170,7 +165,7 @@ header {
 .table-wrap {
   overflow-x: auto;
   overflow-y: auto;
-  height: calc(100vh - 52px - 42px - 27px - 33px);
+  height: calc(100vh - 28px - 46px - 68px);
 }
 
 table {
@@ -210,14 +205,10 @@ tbody tr:hover { background: #eef4ff; }
 
 td { padding: 5px 6px; vertical-align: middle; }
 
-.td-no   { color: #aaa; font-size: 11px; width: 36px; }
-.td-date { color: #777; font-size: 11px; white-space: nowrap; }
-.td-title{ font-weight: 600; min-width: 120px; }
+.td-no     { color: #aaa; font-size: 11px; width: 36px; }
+.td-title  { font-weight: 600; min-width: 120px; }
 .td-date-sub { font-size: 9px; color: #999; font-weight: 400; }
-.td-vol  { color: #999; font-size: 11px; }
-.td-price{ text-align: right; font-variant-numeric: tabular-nums; }
-.td-dot  { text-align: center; width: 52px; }
-.td-bn   { font-family: monospace; font-size: 11px; color: #888; }
+.td-dot    { text-align: center; width: 52px; }
 .td-status { text-align: center; width: 86px; }
 
 /* ── ジャンルバッジ ── */
@@ -275,15 +266,7 @@ td { padding: 5px 6px; vertical-align: middle; }
 .st-p  { background: #f0a030; color: #fff; border-color: #d08a20; }    /* 購入未定△ */
 .st-x  { background: #c0392b; color: #fff; border-color: #a02020; }    /* 購入不可- */
 
-/* ── ドット ── */
-.dot {
-  display: inline-block;
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  vertical-align: middle;
-}
-.dot-np { background: var(--screen); }
-.dot-sg { background: #e84393; }
+/* ── NP/SGBタグ ── */
 .tag-np {
   display: inline-block;
   padding: 1px 5px;
@@ -354,30 +337,25 @@ td { padding: 5px 6px; vertical-align: middle; }
     </div>
     <div class="ctrl-group">
       <span class="ctrl-label">ジャンル</span>
-      <select class="ctrl-select" id="fGenre" onchange="filter()"><option value="">すべて</option></select>
+      <select class="ctrl-select ctrl-select-sm" id="fGenre" onchange="filter()"><option value="">すべて</option></select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">所持</span>
+      <select class="ctrl-select ctrl-select-sm" id="fStatus" onchange="filter()">
+        <option value="">すべて</option>
+        <option value="owned">所持あり</option>
+        <option value="none">未所持</option>
+        <option value="1">1本</option>
+        <option value="2+">2本以上</option>
+        <option value="△">購入未定</option>
+        <option value="-">購入不可</option>
+      </select>
     </div>
   </div>
   <div class="ctrl-row">
     <div class="ctrl-group">
-      <span class="ctrl-label">所持</span>
-      <select class="ctrl-select" id="fStatus" onchange="filter()">
-        <option value="">すべて</option>
-        <option value="owned">所持あり（1本以上）</option>
-        <option value="none">未所持（空白）</option>
-        <option value="1">1本</option>
-        <option value="2+">2本以上</option>
-        <option value="△">購入未定（△）</option>
-        <option value="-">購入不可（-）</option>
-      </select>
-    </div>
-    <div class="ctrl-group">
-      <span class="ctrl-label">機種</span>
-      <select class="ctrl-select" id="fMachine" onchange="filter()">
-        <option value="">すべて</option>
-        <option value="M">モノ（GB/GBP）</option>
-        <option value="C専">カラー（GBC専用）</option>
-        <option value="C対">共通（GBC対応）</option>
-      </select>
+      <span class="ctrl-label">メーカー</span>
+      <select class="ctrl-select ctrl-select-md" id="fMaker" onchange="filter()"><option value="">すべて</option></select>
     </div>
     <button class="apply-btn" id="applyBtn" onclick="applyChanges()" style="display:none">✔ 適用</button>
   </div>
@@ -509,7 +487,7 @@ const GC = { ACT:'g-ACT', RPG:'g-RPG', PZL:'g-PZL', STG:'g-STG', SPT:'g-SPT',
 // 重複・誤登録エントリの除外リスト（No）
 const EXCLUDE = new Set(['1240']);
 
-
+// データ補正（ジャンル・機種が不明なタイトルを修正）
 const CORRECTIONS = {
   '1188': { ge: 'SPT', tp: 'M'   },  // ゴルフランド（未発売）
   '1273': { ge: 'SLG', tp: 'M'   },  // ゲームボーイウォーズ Turbo ファミ通版
@@ -551,13 +529,13 @@ function filter() {
   const q  = document.getElementById('q').value.toLowerCase().trim();
   const fg = document.getElementById('fGenre').value;
   const fs = document.getElementById('fStatus').value;
-  const fm = document.getElementById('fMachine').value;
+  const fm = document.getElementById('fMaker').value;
 
   let rows = ALL_DATA.filter(r => {
     if (EXCLUDE.has(r.no)) return false;
     if (q  && !(r.ti||'').toLowerCase().includes(q) && !getMaker(r).toLowerCase().includes(q)) return false;
     if (fg && getField(r, 'ge').trim() !== fg) return false;
-    if (fm && getField(r, 'tp').trim() !== fm) return false;
+    if (fm && getMaker(r) !== fm) return false;
     const st = getStatus(r);
     if (fs === 'owned' && !['1','2','3','4','5'].includes(st)) return false;
     if (fs === 'none'  && st !== '') return false;
@@ -571,7 +549,7 @@ function filter() {
   rows.sort((a, b) => {
     let av = sortKey === 'ar' ? getStatus(a) : (a[sortKey] || '');
     let bv = sortKey === 'ar' ? getStatus(b) : (b[sortKey] || '');
-    if (['no','pr'].includes(sortKey)) { av = parseInt(av)||0; bv = parseInt(bv)||0; }
+    if (['no'].includes(sortKey)) { av = parseInt(av)||0; bv = parseInt(bv)||0; }
     if (av < bv) return sortAsc ? -1 : 1;
     if (av > bv) return sortAsc ?  1 : -1;
     return 0;
@@ -611,8 +589,6 @@ function renderRows(rows) {
     const gc  = GC[ge] || 'g-ETC';
     const mtpCls = tp === 'M' ? 'm-M' : tp === 'C専' ? 'm-Conly' : 'm-Cboth';
     const mtpLbl = tp === 'M' ? 'モノ' : tp === 'C専' ? 'カラー' : tp === 'C対' ? '共通' : '不明';
-    const prNum = parseInt(r.pr);
-    const prLbl = r.pr === '非売品' ? '非売品' : (!r.pr || r.pr === '?' || isNaN(prNum)) ? '不明' : '¥' + prNum.toLocaleString();
     const npDot = r.np === '○' ? '<span class="tag-np" title="任天堂パワー対応">NP</span>' : '';
     const sgDot = r.sg === '○' ? '<span class="tag-sg" title="スーパーゲームボーイ対応">SGB</span>' : '';
 
@@ -679,12 +655,23 @@ async function init() {
     const data = await decompressData(B64_DATA);
     ALL_DATA.push(...data);
   } catch(e) { console.error('load error', e); }
-  const genres = [...new Set(ALL_DATA.map(r => r.ge).filter(Boolean))].sort();
-  const sel = document.getElementById('fGenre');
+
+  // ジャンル（?を除外）
+  const genres = [...new Set(ALL_DATA.map(r => getField(r,'ge')).filter(g => g && g !== '?'))].sort();
+  const gSel = document.getElementById('fGenre');
   genres.forEach(g => {
     const o = document.createElement('option');
-    o.value = g; o.textContent = g; sel.appendChild(o);
+    o.value = g; o.textContent = g; gSel.appendChild(o);
   });
+
+  // メーカー（補正済み・重複除去・ソート）
+  const makers = [...new Set(ALL_DATA.map(r => getMaker(r)).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'ja'));
+  const mSel = document.getElementById('fMaker');
+  makers.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m; mSel.appendChild(o);
+  });
+
   updateHeaderStats();
   filter();
 }
