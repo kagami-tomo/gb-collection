@@ -336,6 +336,7 @@ td { padding: 5px 6px; vertical-align: middle; }
   <div class="hdr-bottom">
     <div class="logo">◀ GB LIST</div>
     <div class="hdr-btns">
+      <button class="hdr-btn" id="installBtn" onclick="installApp()" style="display:none">📲 インストール</button>
       <button class="hdr-btn" onclick="exportJSON()">💾 エクスポート</button>
       <label class="hdr-btn" style="cursor:pointer">
         📂 インポート
@@ -407,7 +408,6 @@ td { padding: 5px 6px; vertical-align: middle; }
         <th onclick="sortBy('ti')">タイトル</th>
         <th onclick="sortBy('ge')">ジャンル</th>
         <th onclick="sortBy('mk')">メーカー</th>
-        <th onclick="sortBy('pr')">価格</th>
         <th onclick="sortBy('tp')">機種</th>
         <th>NP/SGB</th>
       </tr>
@@ -624,7 +624,6 @@ function renderRows(rows) {
       <td class="td-title">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
       <td><span class="badge ${gc}">${ge}</span></td>
       <td>${getMaker(r)}</td>
-      <td class="td-price">${prLbl}</td>
       <td><span class="mach ${mtpCls}">${mtpLbl}</span></td>
       <td class="td-dot">${npDot}${sgDot}</td>
     </tr>`;
@@ -691,6 +690,94 @@ async function init() {
 }
 
 init();
+
+// ── PWA ──────────────────────────────────────────────────
+// ゲームボーイ風SVGアイコン
+const GB_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="16" fill="#2c2c3a"/>
+  <!-- 本体 -->
+  <rect x="18" y="10" width="64" height="80" rx="10" fill="#e8e0d0"/>
+  <!-- 画面枠 -->
+  <rect x="26" y="16" width="48" height="36" rx="4" fill="#2c2c3a"/>
+  <!-- 画面 -->
+  <rect x="29" y="19" width="42" height="30" rx="2" fill="#9bbc0f"/>
+  <!-- 画面内ドット -->
+  <text x="50" y="38" text-anchor="middle" font-size="14" fill="#0f380f">GB</text>
+  <!-- 十字キー -->
+  <rect x="24" y="62" width="8" height="20" rx="2" fill="#555"/>
+  <rect x="20" y="66" width="16" height="12" rx="2" fill="#555"/>
+  <!-- ABボタン -->
+  <circle cx="68" cy="68" r="5" fill="#c0392b"/>
+  <circle cx="78" cy="64" r="5" fill="#c0392b"/>
+  <!-- STARTSELECTボタン -->
+  <rect x="38" y="74" width="10" height="4" rx="2" fill="#888"/>
+  <rect x="52" y="74" width="10" height="4" rx="2" fill="#888"/>
+</svg>`;
+
+const GB_ICON_URL = 'data:image/svg+xml,' + encodeURIComponent(GB_ICON_SVG);
+
+// manifest をインラインで生成
+const manifest = {
+  name: 'GB コレクション管理',
+  short_name: 'GB管理',
+  description: 'ゲームボーイ全タイトルコレクション管理',
+  start_url: './',
+  display: 'standalone',
+  background_color: '#ffffff',
+  theme_color: '#2c2c3a',
+  lang: 'ja',
+  icons: [
+    { src: GB_ICON_URL, sizes: 'any', type: 'image/svg+xml' }
+  ]
+};
+const mblob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+const murl  = URL.createObjectURL(mblob);
+const mlink = document.createElement('link');
+mlink.rel = 'manifest'; mlink.href = murl;
+document.head.appendChild(mlink);
+
+// Apple用アイコン
+const appleIcon = document.createElement('link');
+appleIcon.rel = 'apple-touch-icon';
+appleIcon.href = GB_ICON_URL;
+document.head.appendChild(appleIcon);
+
+// Service Worker
+const SW_CODE = `
+const CACHE = 'gb-v1';
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+      caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+      return res;
+    }).catch(() => caches.match(e.request)))
+  );
+});
+`;
+if ('serviceWorker' in navigator) {
+  const swBlob = new Blob([SW_CODE], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+}
+
+// インストールボタン
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'inline-block';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').style.display = 'none';
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  }
+}
 </script>
 </body>
 </html>
