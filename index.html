@@ -485,7 +485,7 @@ const GC = { ACT:'g-ACT', RPG:'g-RPG', PZL:'g-PZL', STG:'g-STG', SPT:'g-SPT',
              AVG:'g-AVG', ETC:'g-ETC' };
 
 // 重複・誤登録エントリの除外リスト（No）
-const EXCLUDE = new Set(['1240']);
+const EXCLUDE = new Set(['1240', '1188']);
 
 // データ補正（ジャンル・機種が不明なタイトルを修正）
 const CORRECTIONS = {
@@ -624,7 +624,10 @@ function toggleStatus(no) {
   }
   // フィルターが有効な場合は適用ボタンを表示
   const fs = document.getElementById('fStatus').value;
-  if (fs) {
+  const fq = document.getElementById('q').value.trim();
+  const fg = document.getElementById('fGenre').value;
+  const fm = document.getElementById('fMaker').value;
+  if (fs || fq || fg || fm) {
     document.getElementById('applyBtn').style.display = 'inline-block';
   }
 }
