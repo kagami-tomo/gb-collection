@@ -426,6 +426,9 @@ try {
   if (saved) overrides = JSON.parse(saved);
 } catch(e) {}
 
+// 未適用の変更を一時保管
+let pending = {};
+
 function saveOverrides() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(overrides)); } catch(e) {}
 }
@@ -522,6 +525,7 @@ function getField(r, key) {
 let sortKey = 'no', sortAsc = true;
 
 function getStatus(r) {
+  if (pending[r.no] !== undefined) return pending[r.no];
   return overrides[r.no] !== undefined ? overrides[r.no] : (r.ar || '');
 }
 
@@ -611,8 +615,7 @@ function toggleStatus(no) {
   if (!r) return;
   const cur = getStatus(r);
   const idx = ST_CYCLE.indexOf(cur);
-  overrides[no] = ST_CYCLE[(idx === -1 ? 0 : idx + 1) % ST_CYCLE.length];
-  saveOverrides();
+  pending[no] = ST_CYCLE[(idx === -1 ? 0 : idx + 1) % ST_CYCLE.length];
   updateHeaderStats();
   // ボタンの表示だけ更新（フィルターは再実行しない）
   const btn = document.querySelector(`.st-btn[onclick="toggleStatus('${no}')"]`);
@@ -622,17 +625,26 @@ function toggleStatus(no) {
     btn.className = `st-btn ${sm.cls}`;
     btn.textContent = sm.label;
   }
-  // フィルターが有効な場合は適用ボタンを表示
+  // フィルターが有効な場合は適用ボタンを表示、なければ即時保存
   const fs = document.getElementById('fStatus').value;
   const fq = document.getElementById('q').value.trim();
   const fg = document.getElementById('fGenre').value;
   const fm = document.getElementById('fMaker').value;
   if (fs || fq || fg || fm) {
     document.getElementById('applyBtn').style.display = 'inline-block';
+  } else {
+    // フィルターなし → 即時保存
+    Object.assign(overrides, pending);
+    pending = {};
+    saveOverrides();
   }
 }
 
 function applyChanges() {
+  // pendingをoverridesにマージしてlocalStorageに保存
+  Object.assign(overrides, pending);
+  pending = {};
+  saveOverrides();
   document.getElementById('applyBtn').style.display = 'none';
   filter();
 }
