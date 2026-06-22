@@ -291,6 +291,7 @@ td { padding: 5px 6px; vertical-align: middle; }
 }
 
 .empty { text-align: center; padding: 60px; color: #aaa; font-size: 14px; }
+.tr-jump { background: #fff9c4 !important; border-left: 3px solid #f0a030; }
 
 .hdr-btn {
   background: rgba(255,255,255,.12);
@@ -575,6 +576,8 @@ function sortBy(key) {
   filter();
 }
 
+let jumpNo = null; // ジャンプ先No
+
 function renderRows(rows) {
   const tbody = document.getElementById('tbody');
   const empty = document.getElementById('empty');
@@ -595,12 +598,13 @@ function renderRows(rows) {
     const mtpLbl = tp === 'M' ? 'モノ' : tp === 'C専' ? 'カラー' : tp === 'C対' ? '共通' : '不明';
     const npDot = r.np === '○' ? '<span class="tag-np" title="任天堂パワー対応">NP</span>' : '';
     const sgDot = r.sg === '○' ? '<span class="tag-sg" title="スーパーゲームボーイ対応">SGB</span>' : '';
+    const highlight = r.no === jumpNo ? ' class="tr-jump"' : '';
 
-    return `<tr>
+    return `<tr${highlight} id="row-${r.no}">
       <td class="td-status">
         <span class="st-btn ${sm.cls}" onclick="toggleStatus('${r.no}')">${sm.label}</span>
       </td>
-      <td class="td-no">${r.no}</td>
+      <td class="td-no" onclick="jumpToNo('${r.no}')" style="cursor:pointer;color:#3a7bd5">${r.no}</td>
       <td class="td-title">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
       <td><span class="badge ${gc}">${ge}</span></td>
       <td>${getMaker(r)}</td>
@@ -608,6 +612,24 @@ function renderRows(rows) {
       <td class="td-dot">${npDot}${sgDot}</td>
     </tr>`;
   }).join('');
+
+  // ジャンプ先にスクロール
+  if (jumpNo) {
+    const el = document.getElementById(`row-${jumpNo}`);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    jumpNo = null;
+  }
+}
+
+function jumpToNo(no) {
+  // フィルターをリセットして全件表示、該当Noにスクロール
+  document.getElementById('q').value = '';
+  document.getElementById('fGenre').value = '';
+  document.getElementById('fStatus').value = '';
+  document.getElementById('fMaker').value = '';
+  document.getElementById('applyBtn').style.display = 'none';
+  jumpNo = no;
+  filter();
 }
 
 function toggleStatus(no) {
@@ -617,7 +639,7 @@ function toggleStatus(no) {
   const idx = ST_CYCLE.indexOf(cur);
   pending[no] = ST_CYCLE[(idx === -1 ? 0 : idx + 1) % ST_CYCLE.length];
   updateHeaderStats();
-  // ボタンの表示だけ更新（フィルターは再実行しない）
+  // ボタンの表示だけ更新
   const btn = document.querySelector(`.st-btn[onclick="toggleStatus('${no}')"]`);
   if (btn) {
     const st = getStatus(r);
@@ -625,23 +647,11 @@ function toggleStatus(no) {
     btn.className = `st-btn ${sm.cls}`;
     btn.textContent = sm.label;
   }
-  // フィルターが有効な場合は適用ボタンを表示、なければ即時保存
-  const fs = document.getElementById('fStatus').value;
-  const fq = document.getElementById('q').value.trim();
-  const fg = document.getElementById('fGenre').value;
-  const fm = document.getElementById('fMaker').value;
-  if (fs || fq || fg || fm) {
-    document.getElementById('applyBtn').style.display = 'inline-block';
-  } else {
-    // フィルターなし → 即時保存
-    Object.assign(overrides, pending);
-    pending = {};
-    saveOverrides();
-  }
+  // 常に適用ボタンを表示（全件表示中も誤タップ防止）
+  document.getElementById('applyBtn').style.display = 'inline-block';
 }
 
 function applyChanges() {
-  // pendingをoverridesにマージしてlocalStorageに保存
   Object.assign(overrides, pending);
   pending = {};
   saveOverrides();
