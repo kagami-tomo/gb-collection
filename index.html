@@ -130,6 +130,19 @@ header {
   white-space: nowrap;
 }
 .apply-btn:hover { background: #2a6bc5; }
+.cancel-btn {
+  background: #e0e0e0;
+  border: none;
+  color: #555;
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.cancel-btn:hover { background: #ccc; }
 
 /* ── サブバー ── */
 .sub-bar {
@@ -359,6 +372,7 @@ td { padding: 5px 6px; vertical-align: middle; }
       <select class="ctrl-select ctrl-select-md" id="fMaker" onchange="filter()"><option value="">すべて</option></select>
     </div>
     <button class="apply-btn" id="applyBtn" onclick="applyChanges()" style="display:none">✔ 適用</button>
+    <button class="cancel-btn" id="cancelBtn" onclick="cancelChanges()" style="display:none">✕ キャンセル</button>
   </div>
 </div>
 
@@ -613,21 +627,26 @@ function renderRows(rows) {
     </tr>`;
   }).join('');
 
-  // ジャンプ先にスクロール
+  // ジャンプ先にスクロール（table-wrap内でスクロール）
   if (jumpNo) {
     const el = document.getElementById(`row-${jumpNo}`);
-    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    const wrap = document.querySelector('.table-wrap');
+    if (el && wrap) {
+      const elTop = el.offsetTop;
+      const wrapH = wrap.clientHeight;
+      wrap.scrollTop = elTop - wrapH / 2;
+    }
     jumpNo = null;
   }
 }
 
 function jumpToNo(no) {
-  // フィルターをリセットして全件表示、該当Noにスクロール
   document.getElementById('q').value = '';
   document.getElementById('fGenre').value = '';
   document.getElementById('fStatus').value = '';
   document.getElementById('fMaker').value = '';
   document.getElementById('applyBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
   jumpNo = no;
   filter();
 }
@@ -639,7 +658,6 @@ function toggleStatus(no) {
   const idx = ST_CYCLE.indexOf(cur);
   pending[no] = ST_CYCLE[(idx === -1 ? 0 : idx + 1) % ST_CYCLE.length];
   updateHeaderStats();
-  // ボタンの表示だけ更新
   const btn = document.querySelector(`.st-btn[onclick="toggleStatus('${no}')"]`);
   if (btn) {
     const st = getStatus(r);
@@ -647,8 +665,9 @@ function toggleStatus(no) {
     btn.className = `st-btn ${sm.cls}`;
     btn.textContent = sm.label;
   }
-  // 常に適用ボタンを表示（全件表示中も誤タップ防止）
+  // 常に適用・キャンセルボタンを表示
   document.getElementById('applyBtn').style.display = 'inline-block';
+  document.getElementById('cancelBtn').style.display = 'inline-block';
 }
 
 function applyChanges() {
@@ -656,6 +675,15 @@ function applyChanges() {
   pending = {};
   saveOverrides();
   document.getElementById('applyBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
+  filter();
+}
+
+function cancelChanges() {
+  pending = {};
+  updateHeaderStats();
+  document.getElementById('applyBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
   filter();
 }
 
