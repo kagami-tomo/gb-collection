@@ -800,13 +800,26 @@ function showSearchMenu(e, title) {
     ${items.map(it => `<a class="search-menu-item" href="${it.url}" target="_blank" onclick="closeSearchMenu()">${it.icon} ${it.label}</a>`).join('')}
   `;
 
-  // 表示位置（タップ位置の近く）
-  const x = Math.min(e.clientX, window.innerWidth - 220);
-  const y = Math.min(e.clientY, window.innerHeight - 220);
-  menu.style.left = x + 'px';
-  menu.style.top  = y + 'px';
-
+  // 一旦非表示で追加してサイズ取得後に位置調整
+  menu.style.visibility = 'hidden';
   document.body.appendChild(menu);
+
+  requestAnimationFrame(() => {
+    const menuH = menu.offsetHeight;
+    const menuW = menu.offsetWidth;
+    const margin = 8;
+    let x = e.clientX;
+    let y = e.clientY;
+    // 右端補正
+    if (x + menuW + margin > window.innerWidth) x = window.innerWidth - menuW - margin;
+    // 下端補正：下に入らなければ上に表示
+    if (y + menuH + margin > window.innerHeight) y = e.clientY - menuH;
+    // 上端補正
+    if (y < margin) y = margin;
+    menu.style.left = Math.max(margin, x) + 'px';
+    menu.style.top  = y + 'px';
+    menu.style.visibility = 'visible';
+  });
 }
 
 function closeSearchMenu() {
