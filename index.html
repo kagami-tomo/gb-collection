@@ -306,6 +306,43 @@ td { padding: 5px 6px; vertical-align: middle; }
 .empty { text-align: center; padding: 60px; color: #aaa; font-size: 14px; }
 .tr-jump { background: #fff9c4 !important; border-left: 3px solid #f0a030; }
 
+/* ── 検索メニュー ── */
+.search-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  z-index: 999;
+  overflow: hidden;
+  min-width: 200px;
+}
+.search-menu-title {
+  background: #2c2c3a;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.search-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: #333;
+}
+.search-menu-item:last-child { border-bottom: none; }
+.search-menu-item:hover { background: #f4f8ff; }
+.search-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+}
+
 .hdr-btn {
   background: rgba(255,255,255,.12);
   border: 1px solid rgba(255,255,255,.3);
@@ -619,7 +656,7 @@ function renderRows(rows) {
         <span class="st-btn ${sm.cls}" onclick="toggleStatus('${r.no}')">${sm.label}</span>
       </td>
       <td class="td-no" onclick="jumpToNo('${r.no}')" style="cursor:pointer;color:#3a7bd5">${r.no}</td>
-      <td class="td-title">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
+      <td class="td-title" onclick="showSearchMenu(event,'${r.ti}')" style="cursor:pointer">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
       <td><span class="badge ${gc}">${ge}</span></td>
       <td>${getMaker(r)}</td>
       <td><span class="mach ${mtpCls}">${mtpLbl}</span></td>
@@ -731,7 +768,51 @@ async function init() {
 
 init();
 
-// ── PWA ──────────────────────────────────────────────────
+// ── 検索メニュー ─────────────────────────────────────────
+function showSearchMenu(e, title) {
+  e.stopPropagation();
+  closeSearchMenu();
+
+  const q = encodeURIComponent(title + ' ゲームボーイ');
+  const qAmz = encodeURIComponent(title + ' ゲームボーイ');
+
+  const items = [
+    { icon: '🖼️', label: 'Google 画像検索', url: `https://www.google.com/search?tbm=isch&q=${q}` },
+    { icon: '🔍', label: 'Google 検索',     url: `https://www.google.com/search?q=${q}` },
+    { icon: '▶️', label: 'YouTube',          url: `https://www.youtube.com/results?search_query=${q}` },
+    { icon: '🛒', label: 'Amazon',           url: `https://www.amazon.co.jp/s?k=${qAmz}` },
+    { icon: '🏪', label: 'メルカリ',          url: `https://jp.mercari.com/search?keyword=${q}` },
+    { icon: '🔨', label: 'ヤフオク',          url: `https://auctions.yahoo.co.jp/search/search?p=${q}` },
+  ];
+
+  // オーバーレイ
+  const overlay = document.createElement('div');
+  overlay.className = 'search-menu-overlay';
+  overlay.onclick = closeSearchMenu;
+  document.body.appendChild(overlay);
+
+  // メニュー
+  const menu = document.createElement('div');
+  menu.className = 'search-menu';
+  menu.id = 'searchMenu';
+  menu.innerHTML = `
+    <div class="search-menu-title">🔎 ${title}</div>
+    ${items.map(it => `<a class="search-menu-item" href="${it.url}" target="_blank" onclick="closeSearchMenu()">${it.icon} ${it.label}</a>`).join('')}
+  `;
+
+  // 表示位置（タップ位置の近く）
+  const x = Math.min(e.clientX, window.innerWidth - 220);
+  const y = Math.min(e.clientY, window.innerHeight - 220);
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+
+  document.body.appendChild(menu);
+}
+
+function closeSearchMenu() {
+  document.getElementById('searchMenu')?.remove();
+  document.querySelector('.search-menu-overlay')?.remove();
+}
 // ゲームボーイ風SVGアイコン
 const GB_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="16" fill="#2c2c3a"/>
