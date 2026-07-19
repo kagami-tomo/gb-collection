@@ -96,7 +96,7 @@ header {
   gap: 4px;
 }
 .ctrl-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #666;
   white-space: nowrap;
 }
@@ -104,18 +104,18 @@ header {
   background: #fff;
   border: 1px solid #ccc;
   color: #333;
-  padding: 4px 6px;
+  padding: 6px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   outline: none;
   font-family: inherit;
 }
-.ctrl-input { width: 120px; }
+.ctrl-input { width: 150px; }
 .ctrl-input::placeholder { color: #bbb; }
 .ctrl-input:focus, .ctrl-select:focus { border-color: #3a7bd5; box-shadow: 0 0 0 2px rgba(58,123,213,.15); }
 .ctrl-select option { background: #fff; color: #333; }
-.ctrl-select-sm { width: 70px; }
-.ctrl-select-md { width: 160px; }
+.ctrl-select-sm { width: 80px; }
+.ctrl-select-md { width: 180px; }
 
 .apply-btn {
   background: #3a7bd5;
@@ -551,6 +551,14 @@ const CORRECTIONS = {
   '1277': { ge: 'RPG', tp: 'C専' },  // グランデュエル 体験版
   '1278': { ge: 'ACT', tp: 'C専' },  // ボンバーマンMAX　ＡＩＮバージョン
   '1280': { ge: 'ACT', tp: 'C専' },  // SUPER MARIO BROS. Deluxe
+  '1046': { tp: 'C専' },             // データナビプロ野球（共通→カラー）
+  '1121': { tp: 'C専' },             // でじこの麻雀パーティ（共通→カラー）
+  '867':  { tp: 'C専' },             // ポケット花札（共通→カラー）
+  '868':  { tp: 'C対' },             // ルーカのパズルで大冒険（カラー→共通）
+  '1075': { tp: 'C専' },             // ハムスター倶楽部 あわせてチュー（共通→カラー）
+  '1156': { tp: 'C専' },             // 笑う犬の冒険 SILLY GO LUCKY !（共通→カラー）
+  '1161': { tp: 'C専' },             // コトバトル 天外の守人（共通→カラー）
+  '1231': { tp: 'C専' },             // ドキ×ドキさせて！！（共通→カラー）
 };
 
 // メーカー表記揺れ補正
@@ -647,6 +655,7 @@ function renderRows(rows) {
     const gc  = GC[ge] || 'g-ETC';
     const mtpCls = tp === 'M' ? 'm-M' : tp === 'C専' ? 'm-Conly' : 'm-Cboth';
     const mtpLbl = tp === 'M' ? 'モノ' : tp === 'C専' ? 'カラー' : tp === 'C対' ? '共通' : '不明';
+    const safeTitle = r.ti.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     const npDot = r.np === '○' ? '<span class="tag-np" title="任天堂パワー対応">NP</span>' : '';
     const sgDot = r.sg === '○' ? '<span class="tag-sg" title="スーパーゲームボーイ対応">SGB</span>' : '';
     const highlight = r.no === jumpNo ? ' class="tr-jump"' : '';
@@ -656,7 +665,7 @@ function renderRows(rows) {
         <span class="st-btn ${sm.cls}" onclick="toggleStatus('${r.no}')">${sm.label}</span>
       </td>
       <td class="td-no" onclick="jumpToNo('${r.no}')" style="cursor:pointer;color:#3a7bd5">${r.no}</td>
-      <td class="td-title" onclick="showSearchMenu(event,'${r.ti}')" style="cursor:pointer">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
+      <td class="td-title" onclick="showSearchMenu(event,'${safeTitle}')" style="cursor:pointer">${r.ti}<br><span class="td-date-sub">${r.dt}</span></td>
       <td><span class="badge ${gc}">${ge}</span></td>
       <td>${getMaker(r)}</td>
       <td><span class="mach ${mtpCls}">${mtpLbl}</span></td>
