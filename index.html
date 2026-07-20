@@ -96,7 +96,7 @@ header {
   gap: 4px;
 }
 .ctrl-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #666;
   white-space: nowrap;
 }
@@ -104,19 +104,36 @@ header {
   background: #fff;
   border: 1px solid #ccc;
   color: #333;
-  padding: 6px 8px;
+  padding: 4px 6px;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
   font-family: inherit;
 }
-.ctrl-input { width: 150px; }
+.ctrl-input { width: 120px; }
 .ctrl-input::placeholder { color: #bbb; }
 .ctrl-input:focus, .ctrl-select:focus { border-color: #3a7bd5; box-shadow: 0 0 0 2px rgba(58,123,213,.15); }
 .ctrl-select option { background: #fff; color: #333; }
-.ctrl-select-sm { width: 80px; }
-.ctrl-select-md { width: 180px; }
+.ctrl-select-sm { width: 70px; }
+.ctrl-select-md { width: 160px; }
 
+.quick-btn {
+  background: #f0f0f5;
+  border: 1px solid #ccc;
+  color: #555;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.quick-btn.active {
+  background: #e8f0ff;
+  border-color: #3a7bd5;
+  color: #3a7bd5;
+  font-weight: 700;
+}
 .apply-btn {
   background: #3a7bd5;
   border: none;
@@ -392,7 +409,7 @@ td { padding: 5px 6px; vertical-align: middle; }
     </div>
     <div class="ctrl-group">
       <span class="ctrl-label">所持</span>
-      <select class="ctrl-select ctrl-select-sm" id="fStatus" onchange="filter()">
+      <select class="ctrl-select ctrl-select-sm" id="fStatus" onchange="onStatusChange()">
         <option value="">すべて</option>
         <option value="owned">所持あり</option>
         <option value="none">未所持</option>
@@ -402,6 +419,7 @@ td { padding: 5px 6px; vertical-align: middle; }
         <option value="-">購入不可</option>
       </select>
     </div>
+    <button class="quick-btn" id="quickNone" onclick="toggleQuickNone()">未所持</button>
   </div>
   <div class="ctrl-row">
     <div class="ctrl-group">
@@ -686,7 +704,25 @@ function renderRows(rows) {
   }
 }
 
-function jumpToNo(no) {
+function toggleQuickNone() {
+  const sel = document.getElementById('fStatus');
+  const btn = document.getElementById('quickNone');
+  if (sel.value === 'none') {
+    sel.value = '';
+    btn.classList.remove('active');
+  } else {
+    sel.value = 'none';
+    btn.classList.add('active');
+  }
+  filter();
+}
+
+function onStatusChange() {
+  const sel = document.getElementById('fStatus');
+  const btn = document.getElementById('quickNone');
+  btn.classList.toggle('active', sel.value === 'none');
+  filter();
+}
   document.getElementById('q').value = '';
   document.getElementById('fGenre').value = '';
   document.getElementById('fStatus').value = '';
